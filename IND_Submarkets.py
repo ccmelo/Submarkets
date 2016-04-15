@@ -9,9 +9,17 @@ import pandas
 neighbors_raw=pandas.read_csv("/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSA_Neighbors.csv", header=0, index_col=0)
 neighbors=defaultdict(list)
 submarket_data=pandas.read_csv("/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSAsubmarketdata.csv", header=0, index_col=0)
+
 for index, row in neighbors_raw.iterrows(): 
     neighbors[row['src_LOGCode']].append(row['nbr_LOGCode'])
-#neighbors is a dictionary where key is submarket code and value is a list of the 
-#the submarket codes of all the neighbors 
-for k in neighbors.keys():
-    print k
+"""
+neighbors is a dictionary where key is submarket code and value is a list of the 
+#the submarket codes of all the neighbors """
+
+for submarket in neighbors.keys():
+    for neighbor in neighbors[submarket]:
+        print neighbor
+        try:
+            print submarket_data.loc[neighbor]['N_prop']
+        except:
+            pass
