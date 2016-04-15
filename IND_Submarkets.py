@@ -9,6 +9,9 @@ import pandas
 neighbors_raw=pandas.read_csv("/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSA_Neighbors.csv", header=0, index_col=0)
 neighbors=defaultdict(list)
 submarket_data=pandas.read_csv("/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSAsubmarketdata.csv", header=0, index_col=0)
+submarket_data['match']=0
+print submarket_data
+
 
 for index, row in neighbors_raw.iterrows(): 
     neighbors[row['src_LOGCode']].append(row['nbr_LOGCode'])
