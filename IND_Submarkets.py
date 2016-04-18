@@ -22,22 +22,23 @@ neighbors_raw=pandas.read_csv(neighbors_file, header=0, index_col=0)
 neighbors=defaultdict(tuple)
 neighbor_dict={}
 templist=[]
-#print neighbors_raw 
-
+previous_index=""
 
 i=0
 
 for index, row in neighbors_raw.iterrows(): 
+    if index!=previous_index and previous_index!="": 
+        templist=[]
     #I'm only trying to combine submarkets less than 10million SF in size; with other submarkets less than 15millionSF in size 
-    if float(row['src_Inventory'])<10000000 and float(row['nbr_Inventory'])<15000000 and i<10:
-       # print index,"this is what Index I'm on" 
+    if float(row['src_Inventory'])<10000000 and float(row['nbr_Inventory'])<15000000:
+        print index,"this is what Index I'm on" 
         neighbor_dict.clear()
         neighbor_dict[row['nbr_LOGCode']]=(int(row['nbr_Inventory']), int(row['nbr_Avg_Buiding_Size']))
-        #print neighbor_dict," this is dict I just created as neighbordict"
+        print neighbor_dict," this is dict I just created as neighbordict"
         templist.append(neighbor_dict.copy())
-        #print neighbors[index]
+        print templist
         neighbors[index]=(templist,row['src_Inventory'])
-        i=i+1 
+        previous_index=index
         
 data_as_dict = json.loads(json.dumps(neighbors))
 print(data_as_dict['LOG-LOSA-01'])
