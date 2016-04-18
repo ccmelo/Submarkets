@@ -19,9 +19,9 @@ neighbors_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\LOSA_
 data_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\LOSAsubmarketdata.csv"
 
 neighbors_raw=pandas.read_csv(neighbors_file, header=0, index_col=0)
-neighbors=defaultdict(list)
+neighbors=defaultdict(tuple)
 neighbor_dict={}
-
+templist=[]
 #print neighbors_raw 
 
 
@@ -34,15 +34,16 @@ for index, row in neighbors_raw.iterrows():
         neighbor_dict.clear()
         neighbor_dict[row['nbr_LOGCode']]=(int(row['nbr_Inventory']), int(row['nbr_Avg_Buiding_Size']))
         #print neighbor_dict," this is dict I just created as neighbordict"
-        neighbors[index].append(neighbor_dict.copy())
+        templist.append(neighbor_dict.copy())
         #print neighbors[index]
+        neighbors[index]=(templist,row['src_Inventory'])
         i=i+1 
         
 data_as_dict = json.loads(json.dumps(neighbors))
 print(data_as_dict['LOG-LOSA-01'])
 """
-neighbors is a dictionary where key is submarket code and value is a list of all neighbors, where each neighbor is represented as 
-a dictionary where key is the neighbor's submarket code and value is a tuple containing (nbr_Invesntory, nbr_Avg_BLDG_size)
+neighbors is a dictionary where key is submarket code and value is a TUPLE where [0] is a list of all neighbors, where each neighbor is represented as 
+a dictionary where key is the neighbor's submarket code and value is a tuple containing (nbr_Invesntory, nbr_Avg_BLDG_size) and [1] is src_inventory 
 
     
 
