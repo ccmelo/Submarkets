@@ -27,8 +27,9 @@ class Submarket(object):
     def PrintNeighbors(self):
         for neighbor in self.neighbors: 
             print '{0}: ({1},{2})'.format(neighbor.Code(), str(self.Inventory), str(self.Avg_Building_Size))
-
-
+    def PrintSubmarket(self):
+        print "Submarket,", submarket.Code()
+        self.PrintNeighbors()
 #HOME FILE PATHS 
 #neighbors_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSA_Neighbors.csv"
 #data_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSAsubmarketdata.csv"
@@ -64,14 +65,13 @@ for index, row in neighbors_raw.iterrows():
         submarkets.add(current_sub)
 
 #test line 
-i=0
+
+
+    
+    
+    
 for submarket in submarkets:
-    print i 
-    print "Submarket,", submarket.Code()
-    submarket.PrintNeighbors()
-    
-    
-    
+    submarket.PrintSubmarket()
 
 
 
