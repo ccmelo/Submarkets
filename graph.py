@@ -1,3 +1,8 @@
+#iterate through all neighbors in all submarkets 
+
+
+
+
 # 6.00.2x Problem Set 5
 # Graph optimization
 #

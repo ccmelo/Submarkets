@@ -16,11 +16,11 @@ class Submarket(object):
         self.Avg_Building_Size=Avg_Building_Size
         self.code=SubmarketCode 
         self.neighbors=[]
-    def Inventory(self):
+    def getInventory(self):
         return self.Inventory
-    def Avg_Building_Size(self):
+    def getAvg_Building_Size(self):
         return self.Avg_Building_Size 
-    def Code(self):
+    def getcode(self):
         return self.code 
     def AddNeighbor(self,submarket): 
         self.neighbors.append(submarket) 
@@ -30,6 +30,15 @@ class Submarket(object):
     def PrintSubmarket(self):
         print "Submarket,", submarket.Code()
         self.PrintNeighbors()
+    def Neighbors(self):
+        return self.neighbors
+        
+def combine(submarket,targetsubmarket): 
+    #combines two current submarkets into a new submarket 
+    #all combines result in a new submarket 
+    t_submarket=Submarket(submarket.getcode()+targetsubmarket.getcode(),submarket.getInventory()+targetsubmarket.getInventory(),(submarket.getAvg_Building_Size()+targetsubmarket.getAvg_Building_Size())/2)
+    
+    
 #HOME FILE PATHS 
 #neighbors_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSA_Neighbors.csv"
 #data_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSAsubmarketdata.csv"
@@ -44,10 +53,10 @@ neighbors_raw=pandas.read_csv(neighbors_file, header=0, index_col=0)
 
 previous_index=""
 #new submarkets keep track of whether submarket has been combined and the "code" of new submarket
-new_submarkets=pandas.read_csv(submarkets_file, header=0, index_col=0)
-new_submarkets['combine']=0
-new_submarkets['new_code']=""
-new_submarkets['Inventory']=0
+track_submarkets=pandas.read_csv(submarkets_file, header=0, index_col=0)
+track_submarkets['combine']=0
+track_submarkets['new_submarket']=0
+track_submarkets['Inventory']=0
 submarkets=set() 
 #print new_submarkets.head()
 #converts raw data to more useful structure
@@ -59,22 +68,28 @@ for index, row in neighbors_raw.iterrows():
     if float(row['src_Inventory'])<10000000 and float(row['nbr_Inventory'])<15000000:
         if index!=previous_index: 
             current_sub=Submarket(index,int(row['src_Inventory']), int(row['src_Avg_Buiding_Size']))
-        sub=Submarket(row['nbr_LOGCode'],int(row['nbr_Inventory']), int(row['nbr_Avg_Buiding_Size']))
-        current_sub.AddNeighbor(sub)
+        current_sub.AddNeighbor(Submarket(row['nbr_LOGCode'],int(row['nbr_Inventory']), int(row['nbr_Avg_Buiding_Size'])))
         previous_index=index
         submarkets.add(current_sub)
 
-#test line 
-
-
-    
-    
-    
+#test lines
 for submarket in submarkets:
-    submarket.PrintSubmarket()
+    for neighbor in submarket.Neighbors():
+        #First combine submarket with any neigbors that have no Inventory that have not already been combined 
+        print neighbor.getcode() 
+        if neighbor.getInventory()==0 and track_submarkets.loc[neighbor.getcode()]['combine']==0:
+            print "here"
+            # if its our first combination for this submarket, combine submarket and neighbor
+            if track_submarkets.loc[submarket.getcode()]['combine']==0:
+                track_submarkets.loc[submarket.getcode()]['combine']=1
+                track_submarkets.loc[neighbor.getcode()]['combine']=1
+                temp=combine(neighbor,submarket)
+                track_submarkets[submarket.getcode()]['new_submarket']=temp
+                track_submarkets[neighbor.getcode()]['new_submarket']=temp
+            #else, add neighbor to current cluster 
+            else: 
+                combine(neighbor,track_submarkets[submarket.getcode()]['new_submarket'])
+            
 
-
-
-        
-#def combine(old_sub,new_sub): 
-    #where old_sub and new_sub are submarket 
+print "OKAY"
+print track_submarkets
