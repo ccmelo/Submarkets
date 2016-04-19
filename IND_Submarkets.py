@@ -22,17 +22,17 @@ submarkets_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\Subm
 neighbors_raw=pandas.read_csv(neighbors_file, header=0, index_col=0)
 #neighbors data structure initialized 
 neighbors=defaultdict(tuple)
-neighbor_dict={}
 previous_index=""
 #new submarkets keep track of whether submarket has been combined and the "code" of new submarket
 new_submarkets=pandas.read_csv(submarkets_file, header=0, index_col=0)
 new_submarkets['combine']=0
 new_submarkets['new_code']=""
+new_submarkets['Inventory']=0
 #print new_submarkets.head()
 #converts raw data to more useful structure
 """
-neighbors is a dictionary where key is submarket code and value is a TUPLE where [0] is a list of all neighbors, where each neighbor is represented as 
-a dictionary where key is the neighbor's submarket code and value is a tuple containing (nbr_Invesntory, nbr_Avg_BLDG_size) and [1] is src_inventory 
+neighbors is a dictionary where key is submarket code and value is a TUPLE where [0] is a list of all neighbors, (where each neighbor is represented as 
+a TUPLE [0] is the neighbor's submarket code [1] is nbr_Invesntory and [2] is nbr_Avg_BLDG_size); and [1] is src_inventory 
 """
     
 for index, row in neighbors_raw.iterrows(): 
@@ -40,10 +40,10 @@ for index, row in neighbors_raw.iterrows():
         templist=[]
     #I'm only trying to combine submarkets less than 10million SF in size; with other submarkets less than 15millionSF in size 
     if float(row['src_Inventory'])<10000000 and float(row['nbr_Inventory'])<15000000:
-        neighbor_dict.clear()
-        neighbor_dict[row['nbr_LOGCode']]=(int(row['nbr_Inventory']), int(row['nbr_Avg_Buiding_Size']))
+        neighbor_tuple=()
+        neighbor_tuple=(row['nbr_LOGCode'],int(row['nbr_Inventory']), int(row['nbr_Avg_Buiding_Size']))
         #append a COPY of just created dict, not the actual dictionary 
-        templist.append(neighbor_dict.copy())
+        templist.append(neighbor_tuple)
         neighbors[index]=(templist,int(row['src_Inventory']))
         previous_index=index
 
@@ -51,10 +51,16 @@ for index, row in neighbors_raw.iterrows():
 #data_as_dict = json.loads(json.dumps(neighbors))
 
 #test line 
-#print neighbors['LOG-LOSA-13']
+print neighbors['LOG-LOSA-13']
 
 #iterate through all neighbors in all submarkets 
 for submarket in neighbors.keys():
     for neighbor in neighbors[submarket][0]:
         #test line: if submarket=='LOG-LOSA-01':
-            print neighbor, '\n'
+            #print n_tuple, '\n'
+        #First try to combine with any neigbors that have no Inventory that have not already been combined 
+        if neighbor[1]==0 and new_submarkets[neighbor[0]]['combine']==0:
+            combine() 
+            
+def combine(old_sub,new_sub): 
+    #where old_sub and new_sub are submarket 
