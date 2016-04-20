@@ -26,9 +26,9 @@ class Submarket(object):
         self.neighbors.append(submarket) 
     def PrintNeighbors(self):
         for neighbor in self.neighbors: 
-            print '{0}: ({1},{2})'.format(neighbor.Code(), str(self.Inventory), str(self.Avg_Building_Size))
+            print '{0}: ({1},{2})'.format(neighbor.getcode(), str(self.Inventory), str(self.Avg_Building_Size))
     def PrintSubmarket(self):
-        print "Submarket,", submarket.Code()
+        print "Submarket,", self.code
         self.PrintNeighbors()
     def Neighbors(self):
         return self.neighbors
@@ -36,11 +36,8 @@ class Submarket(object):
 def combine(submarket,targetsubmarket): 
     #combines two current submarkets into a new submarket 
     #all combines result in a new submarket 
-   # print targetsubmarket
-  #  print submarket
-    print "made it here"
     return Submarket(submarket.getcode()+targetsubmarket.getcode(),submarket.getInventory()+targetsubmarket.getInventory(),(submarket.getAvg_Building_Size()+targetsubmarket.getAvg_Building_Size())/2)
-    
+
     
 #HOME FILE PATHS 
 #neighbors_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSA_Neighbors.csv"
@@ -52,16 +49,16 @@ submarkets_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\Subm
 
 #reads in csv neighbors data as a pandas dataframe 
 neighbors_raw=pandas.read_csv(neighbors_file, header=0, index_col=0)
-#neighbors data structure initialized 
 
-previous_index=""
-#new submarkets keep track of whether submarket has been combined and the "code" of new submarket
+#track submarkets keeps track of whether submarket has been combined and the "code" and Inventory of new submarket
+#starts by reading in all codes 
 track_submarkets=pandas.read_csv(submarkets_file, header=0, index_col=0)
 track_submarkets['combine']=0
-track_submarkets['new_submarket']=0
+track_submarkets['new_submarket']=Submarket('Empty',0,0)
 track_submarkets['Inventory']=0
 submarkets=set() 
-#print new_submarkets.head()
+previous_index=0
+
 #converts raw data to more useful structure
 
 
@@ -75,7 +72,6 @@ for index, row in neighbors_raw.iterrows():
         previous_index=index
         submarkets.add(current_sub)
 
-#test lines
  
 for submarket in submarkets:
     track_submarkets.loc[submarket.getcode(),'new_submarket']=submarket 
@@ -84,6 +80,7 @@ for submarket in submarkets:
     s_Inventory=submarket.getInventory()
     s_avg=submarket.getAvg_Building_Size() 
     for neighbor in submarket.Neighbors():
+        track_submarkets.loc[neighbor.getcode(),'new_submarket']=neighbor
         n_Inventory=neighbor.getInventory()
         n_avg=submarket.getAvg_Building_Size()
         #1. always combine submarket with any neigbors that have no Inventory that have not already been combined 
@@ -92,24 +89,29 @@ for submarket in submarkets:
             if track_submarkets.loc[submarket.getcode(),'combine']==0:
                 track_submarkets.loc[submarket.getcode(),'combine']=1
                 track_submarkets.loc[neighbor.getcode(),'combine']=1
-                temp=combine(neighbor,submarket)
+                temp=combine(neighbor,track_submarkets.loc[submarket.getcode(),'new_submarket'])
                 track_submarkets.loc[submarket.getcode(),'new_submarket']=temp
                 track_submarkets.loc[neighbor.getcode(),'new_submarket']=temp
             #else, add neighbor to current cluster 
             else: 
-                combine(neighbor,track_submarkets.loc[submarket.getcode(),'new_submarket'])
+                temp=combine(neighbor,track_submarkets.loc[submarket.getcode(),'new_submarket'])
+                track_submarkets.loc[submarket.getcode(),'new_submarket']=temp
+                track_submarkets.loc[neighbor.getcode(),'new_submarket']=temp
         #2.Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest AVG BLDG SIZE
         if track_submarkets.loc[neighbor.getcode(),'combine']==0:
-            if n_Inventory+s_Inventory<=15000000 and abs(s_avg-n_avg)<curr_diff:
-                curr_sub=neighbor
+            if track_submarkets.loc[submarket.getcode(),'new_submarket'].getInventory()+s_Inventory<=15000000 and abs(s_avg-n_avg)<curr_diff:
+                comb_neighbor=neighbor
                 combine_flag=1
     if combine_flag==1: 
-        print "went in here"
-        temp=combine(neighbor,curr_sub)
+        temp=combine(comb_neighbor,track_submarkets.loc[submarket.getcode(),'new_submarket'])
         track_submarkets.loc[submarket.getcode(),'new_submarket']=temp
-        track_submarkets.loc[curr_sub.getcode(),'new_submarket']=temp
+        track_submarkets.loc[comb_neighbor.getcode(),'new_submarket']=temp
             
-        
-
-print "OKAY"
+codes=lambda x: x.getcode()     
+print track_submarkets['new_submarket']  
+track_submarkets['new_codes']=track_submarkets['new_submarket'].map(codes)
+track_submarkets['Inventory']=track_submarkets['new_submarket'].map(lambda x: x.getInventory())
 print track_submarkets
+
+#for submarket in submarkets:
+    #submarket.PrintSubmarket()
