@@ -78,8 +78,9 @@ for index, row in neighbors_raw.iterrows():
 #test lines
  
 for submarket in submarkets:
-    combine=0
-    curr_diff=0
+    track_submarkets.loc[submarket.getcode(),'new_submarket']=submarket 
+    combine_flag=0
+    curr_diff=10000000
     s_Inventory=submarket.getInventory()
     s_avg=submarket.getAvg_Building_Size() 
     for neighbor in submarket.Neighbors():
@@ -101,8 +102,9 @@ for submarket in submarkets:
         if track_submarkets.loc[neighbor.getcode(),'combine']==0:
             if n_Inventory+s_Inventory<=15000000 and abs(s_avg-n_avg)<curr_diff:
                 curr_sub=neighbor
-                combine=1
-    if combine==1: 
+                combine_flag=1
+    if combine_flag==1: 
+        print "went in here"
         temp=combine(neighbor,curr_sub)
         track_submarkets.loc[submarket.getcode(),'new_submarket']=temp
         track_submarkets.loc[curr_sub.getcode(),'new_submarket']=temp
