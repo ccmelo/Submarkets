@@ -74,26 +74,27 @@ for index, row in neighbors_raw.iterrows():
 
  
 for submarket in submarkets:
+    print "In submarket", submarket.getcode()
     track_submarkets.loc[submarket.getcode(),'new_submarket']=submarket 
     combine_flag=0
     curr_diff=10000000
     s_Inventory=submarket.getInventory()
     s_avg=submarket.getAvg_Building_Size() 
     for neighbor in submarket.Neighbors():
+        if submarket.getcode()=='LOG-LOSA-65':
+            print neighbor.getcode()
+            print track_submarkets.loc[neighbor.getcode(),'combine']
         track_submarkets.loc[neighbor.getcode(),'new_submarket']=neighbor
         n_Inventory=neighbor.getInventory()
         n_avg=submarket.getAvg_Building_Size()
         #1. always combine submarket with any neigbors that have no Inventory that have not already been combined 
         if n_Inventory==0 and track_submarkets.loc[neighbor.getcode(),'combine']==0:
-            # if its our first combination for this submarket, combine submarket and neighbor
-            if track_submarkets.loc[submarket.getcode(),'combine']==0:
+                if submarket.getcode()=='LOG-LOSA-65':
+                    print "combining LOG LOSA 65 with",neighbor.getcode()
                 track_submarkets.loc[submarket.getcode(),'combine']=1
+                print submarket.getcode(), ", combine set to 1"
                 track_submarkets.loc[neighbor.getcode(),'combine']=1
-                temp=combine(neighbor,track_submarkets.loc[submarket.getcode(),'new_submarket'])
-                track_submarkets.loc[submarket.getcode(),'new_submarket']=temp
-                track_submarkets.loc[neighbor.getcode(),'new_submarket']=temp
-            #else, add neighbor to current cluster 
-            else: 
+                print neighbor.getcode(), ", combine set to 1"
                 temp=combine(neighbor,track_submarkets.loc[submarket.getcode(),'new_submarket'])
                 track_submarkets.loc[submarket.getcode(),'new_submarket']=temp
                 track_submarkets.loc[neighbor.getcode(),'new_submarket']=temp
@@ -106,12 +107,19 @@ for submarket in submarkets:
         temp=combine(comb_neighbor,track_submarkets.loc[submarket.getcode(),'new_submarket'])
         track_submarkets.loc[submarket.getcode(),'new_submarket']=temp
         track_submarkets.loc[comb_neighbor.getcode(),'new_submarket']=temp
-            
+        track_submarkets.loc[submarket.getcode(),'combine']=1
+        print submarket.getcode(), ", combine set to 1"
+        track_submarkets.loc[neighbor.getcode(),'combine']=1
+        print neighbor.getcode(), ", combine set to 1"
 codes=lambda x: x.getcode()     
 print track_submarkets['new_submarket']  
 track_submarkets['new_codes']=track_submarkets['new_submarket'].map(codes)
 track_submarkets['Inventory']=track_submarkets['new_submarket'].map(lambda x: x.getInventory())
 print track_submarkets
 
-#for submarket in submarkets:
-    #submarket.PrintSubmarket()
+
+
+#After initial combines, go throguh track submarkets and see which submarkets are still <10 M SF
+still_small=track_submarkets['Inventory']<10000000
+print still_small 
+#for submarket in 
