@@ -11,7 +11,7 @@ import numpy as np
 import json
 
 class Submarket(object): 
-    def __init__(self,SubmarketCode,Inventory,Avg_Building_Size): 
+    def __init__(self,SubmarketCode="",Inventory=0,Avg_Building_Size=0): 
         self.Inventory=Inventory
         self.Avg_Building_Size=Avg_Building_Size
         self.code=SubmarketCode 
@@ -28,7 +28,7 @@ class Submarket(object):
         for neighbor in self.neighbors: 
             print '{0}: ({1},{2})'.format(neighbor.Code(), str(self.Inventory), str(self.Avg_Building_Size))
     def PrintSubmarket(self):
-        print "Submarket,", submarket.Code()
+        print "Submarket,", self.code
         self.PrintNeighbors()
     def Neighbors(self):
         return self.neighbors
@@ -36,16 +36,16 @@ class Submarket(object):
 def combine(submarket,targetsubmarket): 
     #combines two current submarkets into a new submarket 
     #all combines result in a new submarket 
-    t_submarket=Submarket(submarket.getcode()+targetsubmarket.getcode(),submarket.getInventory()+targetsubmarket.getInventory(),(submarket.getAvg_Building_Size()+targetsubmarket.getAvg_Building_Size())/2)
+    return Submarket(submarket.getcode()+targetsubmarket.getcode(),submarket.getInventory()+targetsubmarket.getInventory(),(submarket.getAvg_Building_Size()+targetsubmarket.getAvg_Building_Size())/2)
     
     
 #HOME FILE PATHS 
-#neighbors_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSA_Neighbors.csv"
-#data_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSAsubmarketdata.csv"
+neighbors_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSA_Neighbors.csv"
+submarkets_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/SubmarketList.csv"
 
 #WORK FILE PATHS
-neighbors_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\LOSA_Neighbors.csv"
-submarkets_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\SubmarketList.csv"
+#neighbors_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\LOSA_Neighbors.csv"
+#submarkets_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\SubmarketList.csv"
 
 #reads in csv neighbors data as a pandas dataframe 
 neighbors_raw=pandas.read_csv(neighbors_file, header=0, index_col=0)
@@ -55,7 +55,7 @@ previous_index=""
 #new submarkets keep track of whether submarket has been combined and the "code" of new submarket
 track_submarkets=pandas.read_csv(submarkets_file, header=0, index_col=0)
 track_submarkets['combine']=0
-track_submarkets['new_submarket']=0
+track_submarkets['new_submarket']=Submarket()
 track_submarkets['Inventory']=0
 submarkets=set() 
 #print new_submarkets.head()
@@ -81,15 +81,19 @@ for submarket in submarkets:
             print "here"
             # if its our first combination for this submarket, combine submarket and neighbor
             if track_submarkets.loc[submarket.getcode()]['combine']==0:
-                track_submarkets.loc[submarket.getcode()]['combine']=1
-                track_submarkets.loc[neighbor.getcode()]['combine']=1
+                track_submarkets.loc[submarket.getcode(),'combine']=1
+                track_submarkets.loc[neighbor.getcode(),'combine']=1
                 temp=combine(neighbor,submarket)
-                track_submarkets[submarket.getcode()]['new_submarket']=temp
-                track_submarkets[neighbor.getcode()]['new_submarket']=temp
+                print "created temp"
+                print track_submarkets.loc[submarket.getcode()]['new_submarket']
+                print "PASS"
+                track_submarkets.loc[submarket.getcode(),'new_submarket']=temp
+                track_submarkets.loc[neighbor.getcode(),'new_submarket']=temp
             #else, add neighbor to current cluster 
             else: 
                 combine(neighbor,track_submarkets[submarket.getcode()]['new_submarket'])
             
 
 print "OKAY"
-print track_submarkets
+for i,row in track_submarkets.iterrows():
+    row['new_submarket'].PrintSubmarket()
