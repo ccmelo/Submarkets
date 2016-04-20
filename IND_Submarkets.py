@@ -36,7 +36,9 @@ class Submarket(object):
 def combine(submarket,targetsubmarket): 
     #combines two current submarkets into a new submarket 
     #all combines result in a new submarket 
-    t_submarket=Submarket(submarket.getcode()+targetsubmarket.getcode(),submarket.getInventory()+targetsubmarket.getInventory(),(submarket.getAvg_Building_Size()+targetsubmarket.getAvg_Building_Size())/2)
+   # print targetsubmarket
+  #  print submarket
+    return Submarket(submarket.getcode()+targetsubmarket.getcode(),submarket.getInventory()+targetsubmarket.getInventory(),(submarket.getAvg_Building_Size()+targetsubmarket.getAvg_Building_Size())/2)
     
     
 #HOME FILE PATHS 
@@ -73,22 +75,22 @@ for index, row in neighbors_raw.iterrows():
         submarkets.add(current_sub)
 
 #test lines
+ 
 for submarket in submarkets:
+
     for neighbor in submarket.Neighbors():
         #First combine submarket with any neigbors that have no Inventory that have not already been combined 
-        print neighbor.getcode() 
-        if neighbor.getInventory()==0 and track_submarkets.loc[neighbor.getcode()]['combine']==0:
-            print "here"
+        if neighbor.getInventory()==0 and track_submarkets.loc[neighbor.getcode(),'combine']==0:
             # if its our first combination for this submarket, combine submarket and neighbor
-            if track_submarkets.loc[submarket.getcode()]['combine']==0:
-                track_submarkets.loc[submarket.getcode()]['combine']=1
-                track_submarkets.loc[neighbor.getcode()]['combine']=1
+            if track_submarkets.loc[submarket.getcode(),'combine']==0:
+                track_submarkets.loc[submarket.getcode(),'combine']=1
+                track_submarkets.loc[neighbor.getcode(),'combine']=1
                 temp=combine(neighbor,submarket)
-                track_submarkets[submarket.getcode()]['new_submarket']=temp
-                track_submarkets[neighbor.getcode()]['new_submarket']=temp
+                track_submarkets.loc[submarket.getcode(),'new_submarket']=temp
+                track_submarkets.loc[neighbor.getcode(),'new_submarket']=temp
             #else, add neighbor to current cluster 
             else: 
-                combine(neighbor,track_submarkets[submarket.getcode()]['new_submarket'])
+                combine(neighbor,track_submarkets.loc[submarket.getcode(),'new_submarket'])
             
 
 print "OKAY"
