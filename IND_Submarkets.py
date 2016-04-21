@@ -23,7 +23,7 @@ class Submarket(object):
         self.new_avg=Avg_Building_Size
     def getInventory(self):
         return self.orig_Inventory
-    def getNewInventory(self):
+    def getCurrentInventory(self):
         return self.new_Inv
     def getAvg_Building_Size(self):
         return self.orig_Avg_Building_Size 
@@ -70,16 +70,16 @@ def combine(s1,s2):
     #now, we must update any submarkets they peviously combine with-> combo list of s1 is same as s2, so only need to iter through 1 list 
     if len(s1.getComboList())>0:
         for sub in s1.getComboList():
-            sub.update(s1.getComboList(),s1.getcode()+s2.getcode(),s1.getInventory()+s2.getInventory(),(s1.getAvg_Building_Size()+s2.getAvg_Building_Size())/2)
+            sub.update(s1.getComboList(),s1.getcode()+s2.getcode(),s1.getCurrentInventory()+s2.getCurrentInventory(),(s1.getAvg_Building_Size()+s2.getAvg_Building_Size())/2)
 
     
 #HOME FILE PATHS 
-neighbors_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSA_Neighbors.csv"
-submarkets_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/SubmarketList.csv"
+#neighbors_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSA_Neighbors.csv"
+#submarkets_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/SubmarketList.csv"
 
 #WORK FILE PATHS
-#neighbors_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\LOSA_Neighbors.csv"
-#submarkets_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\SubmarketList.csv"
+neighbors_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\LOSA_Neighbors.csv"
+submarkets_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\SubmarketList.csv"
 
 #reads in csv neighbors data as a pandas dataframe 
 neighbors_raw=pandas.read_csv(neighbors_file, header=0, index_col=0)
@@ -121,18 +121,22 @@ for submarket in submarkets:
         for neighbor in submarket.Neighbors():
             print "examining neighbor",neighbor.getcode(),"with", neighbor.getInventory(),"inventory"
             print "with combine code of",neighbor.combinestatus() 
-            n_avg=submarket.getAvg_Building_Size()
+            n_avg=neighbor.getAvg_Building_Size()
             #1. always combine submarket with any neigbors that have no Inventory that have not already been combined 
-            if n_Inventory==0 and neighbor.combinestatus()==0:
+            if neighbor.getCurrentInventory()==0 and neighbor.combinestatus()==0:
+                    print "calling combine from 0 if statement"
                     combine(neighbor,submarket)
-                    #2.Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest AVG BLDG SIZE
-            if neighbor.combinestatus==0:
-                if submarket.getNewInventory()+submarket.getNewInventory()<=15000000 and abs(s_avg-n_avg)<curr_diff:
+            #2.Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest AVG BLDG SIZE
+            if neighbor.combinestatus()==0:
+                if submarket.getCurrentInventory()+neighbor.getCurrentInventory()<=15000000 and abs(s_avg-n_avg)<curr_diff:
+                    print "combine flag set to 1"
                     comb_neighbor=neighbor
                     combine_flag=1
         if combine_flag==1: 
             combine(comb_neighbor,submarket)
         i+=1
+        
+
         
 """
 codes=lambda x: x.getcode()     
