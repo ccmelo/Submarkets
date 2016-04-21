@@ -33,10 +33,23 @@ class Submarket(object):
     def Neighbors(self):
         return self.neighbors
         
-def combine(submarket,targetsubmarket): 
+def combine(c_submarket,targetsubmarket): 
     #combines two current submarkets into a new submarket 
     #all combines result in a new submarket 
-    return Submarket(submarket.getcode()+targetsubmarket.getcode(),submarket.getInventory()+targetsubmarket.getInventory(),(submarket.getAvg_Building_Size()+targetsubmarket.getAvg_Building_Size())/2)
+    track_submarkets.loc[c_submarket.getcode(),'combine']=1
+    track_submarkets.loc[targetsubmarket.getcode(),'combine']=1
+    print c_submarket.getcode(), ", combine set to 1"
+    print targetsubmarket.getcode(), ", combine set to 1"
+    
+    s1=track_submarkets.loc[c_submarket.getcode(),'new_submarket']
+    s2=track_submarkets.loc[targetsubmarket.getcode(),'new_submarket']
+    
+    temp=Submarket(s1.getcode()+s2.getcode(),s1.getInventory()+s2.getInventory(),(s1.getAvg_Building_Size()+s2.getAvg_Building_Size())/2)
+
+    track_submarkets.loc[c_submarket.getcode(),'new_submarket']=temp
+    track_submarkets.loc[targetsubmarket.getcode(),'new_submarket']=temp
+    print "combinED", track_submarkets.loc[c_submarket.getcode(),'new_submarket'].getcode(), " with",targetsubmarket.getcode()
+
 
 
     
@@ -57,6 +70,7 @@ track_submarkets=pandas.read_csv(submarkets_file, header=0, index_col=0)
 track_submarkets['combine']=0
 track_submarkets['new_submarket']=Submarket('Empty',0,0)
 track_submarkets['Inventory']=0
+#track_submarkets['combine_list']=[]
 submarkets=set() 
 previous_index=0
 
@@ -73,6 +87,8 @@ for index, row in neighbors_raw.iterrows():
 #In the begining "new_submarket" is set to curretn submarket for everyone
 for sub in submarkets:
     track_submarkets.loc[sub.getcode(),'new_submarket']=sub 
+    for n in sub.Neighbors():
+        track_submarkets.loc[n.getcode(),'new_submarket']=n
 i=0
 for submarket in submarkets:
     if i<10:
@@ -88,29 +104,14 @@ for submarket in submarkets:
             n_avg=submarket.getAvg_Building_Size()
             #1. always combine submarket with any neigbors that have no Inventory that have not already been combined 
             if n_Inventory==0 and track_submarkets.loc[neighbor.getcode(),'combine']==0:
-                    track_submarkets.loc[neighbor.getcode(),'combine']=1
-                    print submarket.getcode(), ", combine set to 1"
-                    track_submarkets.loc[submarket.getcode(),'combine']=1
-                    print neighbor.getcode(), ", combine set to 1"
-                    temp=combine(neighbor,track_submarkets.loc[submarket.getcode(),'new_submarket'])
-                    track_submarkets.loc[submarket.getcode(),'new_submarket']=temp
-                    track_submarkets.loc[neighbor.getcode(),'new_submarket']=temp
-                    print "combinED", track_submarkets.loc[submarket.getcode(),'new_submarket'].getcode(), " with",neighbor.getcode(), 'due to 0 inv'
-
+                    combine(neighbor,submarket)
                     #2.Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest AVG BLDG SIZE
             if track_submarkets.loc[neighbor.getcode(),'combine']==0:
                 if track_submarkets.loc[submarket.getcode(),'new_submarket'].getInventory()+track_submarkets.loc[submarket.getcode(),'new_submarket'].getInventory()<=15000000 and abs(s_avg-n_avg)<curr_diff:
                     comb_neighbor=neighbor
                     combine_flag=1
         if combine_flag==1: 
-            temp=combine(comb_neighbor,track_submarkets.loc[submarket.getcode(),'new_submarket'])
-            print "combined", comb_neighbor.getcode(),"with",track_submarkets.loc[submarket.getcode(),'new_submarket'].getcode()
-            track_submarkets.loc[submarket.getcode(),'new_submarket']=temp
-            track_submarkets.loc[comb_neighbor.getcode(),'new_submarket']=temp
-            track_submarkets.loc[submarket.getcode(),'combine']=1
-            print submarket.getcode(), ", combine set to 1"
-            track_submarkets.loc[neighbor.getcode(),'combine']=1
-            print neighbor.getcode(), ", combine set to 1"
+            combine(comb_neighbor,submarket)
         i+=1
 codes=lambda x: x.getcode()     
 track_submarkets['new_codes']=track_submarkets['new_submarket'].map(codes)
