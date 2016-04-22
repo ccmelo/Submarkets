@@ -86,15 +86,12 @@ neighbors_raw=pandas.read_csv(neighbors_file, header=0, index_col=0)
 
 #track submarkets keeps track of whether submarket has been combined and the "code" and Inventory of new submarket
 #starts by reading in all codes 
-track_submarkets=pandas.read_csv(submarkets_file, header=0, index_col=0)
-track_submarkets['combine']=0
-track_submarkets['new_submarket']=Submarket('Empty',0,0)
-track_submarkets['Inventory']=0
+
 #track_submarkets['combine_list']=[]
-submarkets=set() 
+submarkets={}
 previous_index=0
 
-#convert raw data into submarkets  
+#convert raw data into submarkets  and store them in a DICTIONARY where key=submarketcode and value is submarket OBJECT
 for index, row in neighbors_raw.iterrows(): 
     #I'm only trying to combine submarkets less than 10million SF in size; with other submarkets less than 15millionSF in size 
     if float(row['src_Inventory'])<10000000 and float(row['nbr_Inventory'])<15000000:
@@ -102,16 +99,16 @@ for index, row in neighbors_raw.iterrows():
             current_sub=Submarket(index,int(row['src_Inventory']), int(row['src_Avg_Buiding_Size']))
         current_sub.AddNeighbor(Submarket(row['nbr_LOGCode'],int(row['nbr_Inventory']), int(row['nbr_Avg_Buiding_Size'])))
         previous_index=index
-        submarkets.add(current_sub)
+        submarkets[index]=current_sub 
+
+print submarkets 
 
         
 #In the begining "new_submarket" is set to curretn submarket for everyone
 for sub in submarkets:
-    track_submarkets.loc[sub.getcode(),'new_submarket']=sub 
-    for n in sub.Neighbors():
-        track_submarkets.loc[n.getcode(),'new_submarket']=n
+    print sub
 i=0
-for submarket in submarkets:
+for submarket in submarkets.values():
     if i<10:
         print "In submarket", submarket.getcode(),"with inventory", submarket.getInventory()
         combine_flag=0
