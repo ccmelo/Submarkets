@@ -97,16 +97,16 @@ for index, row in neighbors_raw.iterrows():
     if float(row['src_Inventory'])<10000000 and float(row['nbr_Inventory'])<15000000:
         if index!=previous_index: 
             current_sub=Submarket(index,int(row['src_Inventory']), int(row['src_Avg_Buiding_Size']))
-        current_sub.AddNeighbor(Submarket(row['nbr_LOGCode'],int(row['nbr_Inventory']), int(row['nbr_Avg_Buiding_Size'])))
+        current_sub.AddNeighbor(row['nbr_LOGCode'])
         previous_index=index
         submarkets[index]=current_sub 
 
-print submarkets 
+for k,v in submarkets.iteritems(): 
+    print k
+    print v.Neighbors()
 
         
-#In the begining "new_submarket" is set to curretn submarket for everyone
-for sub in submarkets:
-    print sub
+
 i=0
 for submarket in submarkets.values():
     if i<10:
@@ -115,7 +115,8 @@ for submarket in submarkets.values():
         curr_diff=10000000
         s_Inventory=submarket.getInventory()
         s_avg=submarket.getAvg_Building_Size() 
-        for neighbor in submarket.Neighbors():
+        for n in submarket.Neighbors():
+            neighbor=submarkets[n]
             print "examining neighbor",neighbor.getcode(),"with", neighbor.getInventory(),"inventory"
             print "with combine code of",neighbor.combinestatus() 
             n_avg=neighbor.getAvg_Building_Size()
