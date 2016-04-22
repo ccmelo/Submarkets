@@ -30,7 +30,7 @@ class Submarket(object):
     def getcode(self):
         return self.originalcode 
     def getcurrentcode(self):
-        return self.getcurrentcode
+        return self.currentcode
     def AddNeighbor(self,submarket): 
         self.neighbors.append(submarket) 
     def PrintNeighbors(self):
@@ -84,17 +84,14 @@ submarkets_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\Subm
 #reads in csv neighbors data as a pandas dataframe 
 neighbors_raw=pandas.read_csv(neighbors_file, header=0, index_col=0)
 
-#track submarkets keeps track of whether submarket has been combined and the "code" and Inventory of new submarket
-#starts by reading in all codes 
 
-#track_submarkets['combine_list']=[]
 submarkets={}
 previous_index=0
 
 #convert raw data into submarkets  and store them in a DICTIONARY where key=submarketcode and value is submarket OBJECT
 for index, row in neighbors_raw.iterrows(): 
     #I'm only trying to combine submarkets less than 10million SF in size; with other submarkets less than 15millionSF in size 
-    if float(row['src_Inventory'])<10000000 and float(row['nbr_Inventory'])<15000000:
+    if float(row['src_Inventory'])<15000000 and float(row['nbr_Inventory'])<15000000:
         if index!=previous_index: 
             current_sub=Submarket(index,int(row['src_Inventory']), int(row['src_Avg_Buiding_Size']))
         current_sub.AddNeighbor(row['nbr_LOGCode'])
@@ -109,7 +106,7 @@ for k,v in submarkets.iteritems():
 
 i=0
 for submarket in submarkets.values():
-    if i<10:
+    if i<300:
         print "In submarket", submarket.getcode(),"with inventory", submarket.getInventory()
         combine_flag=0
         curr_diff=10000000
@@ -134,8 +131,14 @@ for submarket in submarkets.values():
             combine(comb_neighbor,submarket)
         i+=1
         
-
-        
+#GET OUTPUT 
+output=pandas.DataFrame.from_dict(submarkets, orient='index') 
+output['final_code']='Unchanged'
+output['final_inventory']=0 
+for k,v in submarkets.iteritems(): 
+   output.loc[k,'final_code']=v.getcurrentcode()
+print output
+output.to_csv("output.csv") 
 """
 codes=lambda x: x.getcode()     
 track_submarkets['new_codes']=track_submarkets['new_submarket'].map(codes)
