@@ -34,7 +34,7 @@ class Submarket(object):
         return self.originalcode 
     def getcurrentcode(self):
         code=''
-        for s in self.combine_with:
+        for s in sorted(self.combine_with):
             code=code+s
         return code 
         return self.currentcode
