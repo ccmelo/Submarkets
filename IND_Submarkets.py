@@ -23,7 +23,13 @@ class Submarket(object):
         self.combine_with=set([SubmarketCode])
         self.combine=0
         self.new_Inv=Inventory
-        self.new_avg=Avg_Building_Size
+        if Avg_Building_Size>0:
+            self.orig_N=Inventory/Avg_Building_Size 
+            self.curr_N=Inventory/Avg_Building_Size 
+        else:
+            self.orig_N=0
+            self.curr_N=0
+            
     def getInventory(self):
         return self.orig_Inventory
     def getCurrentInventory(self):
@@ -52,9 +58,10 @@ class Submarket(object):
         return self.combine_with
     def setNewCode(self,new_code):
         self.currentcode=new_code 
-    def update(self,combined_with_list,new_inv):
+    def update(self,combined_with_list,new_inv,new_N):
         self.combine=1
         self.new_Inv=new_inv 
+        self.curr_N=new_N
         new_combine_list= self.combine_with.union(combined_with_list)
         self.combine_with=new_combine_list
     def combinestatus(self):
@@ -69,10 +76,12 @@ def combine(s1,s2):
     
     s1_start_inv=s1.getCurrentInventory()
     s2_start_inv=s2.getCurrentInventory()
+    s1_N=s1.curr_N
+    s2_N=s2.curr_N
     print "combining", s1.getcode(), "with", s2.getcode()
     #s1 gets combined with everyone s2 is connected with b/c a)we add all elements in s2's combo list to s1 and b) we add their codes together 
-    s1.update(set([s2.getcode()]).union(s2.getComboList()),s1_start_inv+s2_start_inv)
-    s2.update(set([s1.getcode()]).union(s1.getComboList()),s1_start_inv+s2_start_inv)
+    s1.update(set([s2.getcode()]).union(s2.getComboList()),s1_start_inv+s2_start_inv,s1_N+s2_N)
+    s2.update(set([s1.getcode()]).union(s1.getComboList()),s1_start_inv+s2_start_inv,s1_N+s2_N)
     print s1.getcode(), "has the following in combine list", s1.printcombinelist(), "and new inventory of", s1.getCurrentInventory()
     print s2.getcode(), "has the following in combine list", s2.printcombinelist(), "and new inventory of", s2.getCurrentInventory()
     print s1.getcode(), ", combine set to 1"
@@ -83,7 +92,7 @@ def combine(s1,s2):
     if len(s1.getComboList())>2:
         for sub in s1.getComboList():
             print "updating", sub
-            submarkets[sub].update(s1.getComboList(),s1.getCurrentInventory())
+            submarkets[sub].update(s1.getComboList(),s1.getCurrentInventory(),s1.curr_N)
             print "now has combine list of" , submarkets[sub].printcombinelist(), "and new inventory of", submarkets[sub].getCurrentInventory()
     
 #HOME FILE PATHS 
@@ -105,7 +114,7 @@ previous_index=0
 for index, row in neighbors_raw.iterrows(): 
     #I'm only trying to combine submarkets less than 10million SF in size; with other submarkets less than 15millionSF in size 
     if index!=previous_index: 
-        current_sub=Submarket(index,int(row['src_Inventory']), int(row['src_Avg_Buiding_Size']))
+        current_sub=Submarket(index,float(row['src_Inventory']), float(row['src_Avg_Buiding_Size']))
     current_sub.AddNeighbor(row['nbr_LOGCode'])
     previous_index=index
     submarkets[index]=current_sub 
@@ -152,11 +161,12 @@ output=pandas.DataFrame.from_dict(submarkets, orient='index')
 output['orig_inventory']=0
 output['final_code']='Unchanged'
 output['final_inventory']=0 
+output['final_N']=0
 for k,v in submarkets.iteritems(): 
     output.loc[k,'orig_inventory']=v.getInventory()
     output.loc[k,'final_code']=v.getcurrentcode()
     output.loc[k,'final_inventory']=v.getCurrentInventory()
-   
+    output.loc[k,'final_N']=v.curr_N
 print zero
 output.to_csv("output.csv") 
 """
