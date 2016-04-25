@@ -138,11 +138,13 @@ for submarket in submarkets.values():
                     combine(neighbor,submarket)
                     zero+=1 
             #2.Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest AVG BLDG SIZE
-            elif neighbor.combinestatus()==0:
-                if submarket.getCurrentInventory()+neighbor.getCurrentInventory()<=15000000 and abs(s_avg-n_avg)<curr_diff:
+            elif neighbor.getCurrentInventory()!=0 and neighbor.combinestatus()==0:
+                if submarket.getCurrentInventory()+neighbor.getCurrentInventory()<=11000000 and abs(s_avg-n_avg)<curr_diff:
                     print "combine flag set to 1"
                     comb_neighbor=neighbor
+                    curr_diff=abs(s_avg-n_avg)
                     combine_flag=1
+                    
         if combine_flag==1: 
             combine(comb_neighbor,submarket)
     i+=1
