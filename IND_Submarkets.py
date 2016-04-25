@@ -68,24 +68,24 @@ class Submarket(object):
 def combine(s1,s2): 
     #combines two current submarkets into a new submarket 
     
+    s1_start_inv=s1.getCurrentInventory()
+    s2_start_inv=s2.getCurrentInventory()
     print "combining", s1.getcode(), "with", s2.getcode()
-    print s1.getcode(), "has the following in combine list", s1.printcombinelist()
-    print s2.getcode(), "has the following in combine list", s2.printcombinelist()
+    #s1 gets combined with everyone s2 is connected with b/c a)we add all elements in s2's combo list to s1 and b) we add their codes together 
+    s1.update(set([s2.getcode()]).union(s2.getComboList()),s1_start_inv+s2_start_inv,(s1.getAvg_Building_Size()+s2.getAvg_Building_Size())/2)
+    s2.update(set([s1.getcode()]).union(s1.getComboList()),s1_start_inv+s2_start_inv,(s1.getAvg_Building_Size()+s2.getAvg_Building_Size())/2)
+    print s1.getcode(), "has the following in combine list", s1.printcombinelist(), "and new inventory of", s1.getCurrentInventory()
+    print s2.getcode(), "has the following in combine list", s2.printcombinelist(), "and new inventory of", s2.getCurrentInventory()
     print s1.getcode(), ", combine set to 1"
     print s2.getcode(), ", combine set to 1"
-    
-    #s1 gets combined with everyone s2 is connected with b/c a)we add all elements in s2's combo list to s1 and b) we add their codes together 
-    s1.update(set([s2.getcode()]).union(s2.getComboList()),s1.getInventory()+s2.getInventory(),(s1.getAvg_Building_Size()+s2.getAvg_Building_Size())/2)
-    s2.update(set([s1.getcode()]).union(s1.getComboList()),s1.getInventory()+s2.getInventory(),(s1.getAvg_Building_Size()+s2.getAvg_Building_Size())/2)
-    
    # print s1.getcode(), "NOW has the following in combine list", s1.printcombinelist(), "AND code of" s1.getcurrentcode()
    # print s2.getcode(), "NOW has the following in combine list", s2.printcombinelist(), "AND code of" s2.getcurrentcode()
     #now, we must update any submarkets they peviously combine with-> combo list of s1 is same as s2, so only need to iter through 1 list 
     if len(s1.getComboList())>2:
         for sub in s1.getComboList():
             print "updating", sub
-            submarkets[sub].update(s1.getComboList(),s1.getCurrentInventory()+s2.getCurrentInventory(),(s1.getAvg_Building_Size()+s2.getAvg_Building_Size())/2)
-            print "now has combine list of" , submarkets[sub].printcombinelist()
+            submarkets[sub].update(s1.getComboList(),s1.getCurrentInventory(),(s1.getAvg_Building_Size()+s2.getAvg_Building_Size())/2)
+            print "now has combine list of" , submarkets[sub].printcombinelist(), "and new inventory of", submarkets[sub].getCurrentInventory()
     
 #HOME FILE PATHS 
 #neighbors_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSA_Neighbors.csv"
@@ -122,6 +122,7 @@ for submarket in submarkets.values():
     zero=0   
     if i<5:
         print "NEW SUBMARKET:In submarket", submarket.getcode(),"with inventory", submarket.getInventory()
+        n=raw_input("Press any key to continue:")
         combine_flag=0
         curr_diff=10000000
         s_Inventory=submarket.getInventory()
@@ -137,7 +138,7 @@ for submarket in submarkets.values():
                     combine(neighbor,submarket)
                     zero+=1 
             #2.Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest AVG BLDG SIZE
-            if neighbor.combinestatus()==0:
+            elif neighbor.combinestatus()==0:
                 if submarket.getCurrentInventory()+neighbor.getCurrentInventory()<=15000000 and abs(s_avg-n_avg)<curr_diff:
                     print "combine flag set to 1"
                     comb_neighbor=neighbor
@@ -148,11 +149,13 @@ for submarket in submarkets.values():
         
 #GET OUTPUT 
 output=pandas.DataFrame.from_dict(submarkets, orient='index') 
+output['orig_inventory']=0
 output['final_code']='Unchanged'
 output['final_inventory']=0 
 for k,v in submarkets.iteritems(): 
-   output.loc[k,'final_code']=v.getcurrentcode()
-   output.loc[k,'final_inventory']=v.getCurrentInventory()
+    output.loc[k,'orig_inventory']=v.getInventory()
+    output.loc[k,'final_code']=v.getcurrentcode()
+    output.loc[k,'final_inventory']=v.getCurrentInventory()
    
 print zero
 output.to_csv("output.csv") 
