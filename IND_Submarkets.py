@@ -52,10 +52,9 @@ class Submarket(object):
         return self.combine_with
     def setNewCode(self,new_code):
         self.currentcode=new_code 
-    def update(self,combined_with_list,new_inv,new_avg):
+    def update(self,combined_with_list,new_inv):
         self.combine=1
         self.new_Inv=new_inv 
-        self.new_avg=new_avg
         new_combine_list= self.combine_with.union(combined_with_list)
         self.combine_with=new_combine_list
     def combinestatus(self):
@@ -72,8 +71,8 @@ def combine(s1,s2):
     s2_start_inv=s2.getCurrentInventory()
     print "combining", s1.getcode(), "with", s2.getcode()
     #s1 gets combined with everyone s2 is connected with b/c a)we add all elements in s2's combo list to s1 and b) we add their codes together 
-    s1.update(set([s2.getcode()]).union(s2.getComboList()),s1_start_inv+s2_start_inv,(s1.getAvg_Building_Size()+s2.getAvg_Building_Size())/2)
-    s2.update(set([s1.getcode()]).union(s1.getComboList()),s1_start_inv+s2_start_inv,(s1.getAvg_Building_Size()+s2.getAvg_Building_Size())/2)
+    s1.update(set([s2.getcode()]).union(s2.getComboList()),s1_start_inv+s2_start_inv)
+    s2.update(set([s1.getcode()]).union(s1.getComboList()),s1_start_inv+s2_start_inv)
     print s1.getcode(), "has the following in combine list", s1.printcombinelist(), "and new inventory of", s1.getCurrentInventory()
     print s2.getcode(), "has the following in combine list", s2.printcombinelist(), "and new inventory of", s2.getCurrentInventory()
     print s1.getcode(), ", combine set to 1"
@@ -84,7 +83,7 @@ def combine(s1,s2):
     if len(s1.getComboList())>2:
         for sub in s1.getComboList():
             print "updating", sub
-            submarkets[sub].update(s1.getComboList(),s1.getCurrentInventory(),(s1.getAvg_Building_Size()+s2.getAvg_Building_Size())/2)
+            submarkets[sub].update(s1.getComboList(),s1.getCurrentInventory())
             print "now has combine list of" , submarkets[sub].printcombinelist(), "and new inventory of", submarkets[sub].getCurrentInventory()
     
 #HOME FILE PATHS 
