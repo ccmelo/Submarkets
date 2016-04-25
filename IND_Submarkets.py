@@ -116,11 +116,10 @@ for k,v in submarkets.iteritems():
     print k
     print v.Neighbors()
 
-        
-zero=''
+    
 i=0
 for submarket in submarkets.values():
-    
+    zero=0   
     if i<5:
         print "NEW SUBMARKET:In submarket", submarket.getcode(),"with inventory", submarket.getInventory()
         combine_flag=0
@@ -133,12 +132,10 @@ for submarket in submarkets.values():
             print "with combine code of",neighbor.combinestatus() 
             n_avg=neighbor.getAvg_Building_Size()
             #1. always combine submarket with any neigbors that have no Inventory that have not already been combined 
-            if neighbor.getCurrentInventory()==0 and neighbor.combinestatus()==0:
+            if neighbor.getCurrentInventory()==0 and neighbor.combinestatus()==0 and zero<2:
                     print "calling combine from 0 if statement"
-                    i=i+1
-                    if i>1:
-                        zero=submarket.getcode()
                     combine(neighbor,submarket)
+                    zero+=1 
             #2.Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest AVG BLDG SIZE
             if neighbor.combinestatus()==0:
                 if submarket.getCurrentInventory()+neighbor.getCurrentInventory()<=15000000 and abs(s_avg-n_avg)<curr_diff:
@@ -155,7 +152,8 @@ output['final_code']='Unchanged'
 output['final_inventory']=0 
 for k,v in submarkets.iteritems(): 
    output.loc[k,'final_code']=v.getcurrentcode()
-
+   output.loc[k,'final_inventory']=v.getCurrentInventory()
+   
 print zero
 output.to_csv("output.csv") 
 """
