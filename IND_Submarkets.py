@@ -23,8 +23,7 @@ class Submarket(object):
         self.combine_with=set([SubmarketCode])
         self.combine=0
         self.new_Inv=Inventory
-        self.meanX=x
-        self.meanY=y 
+        self.mean=(x,y)
         if Avg_Building_Size>0:
             self.orig_N=Inventory/Avg_Building_Size 
             self.curr_N=Inventory/Avg_Building_Size 
