@@ -15,7 +15,7 @@ import sys
 os.chdir('P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets') 
 
 class Submarket(object): 
-    def __init__(self,SubmarketCode="",Inventory=0,Avg_Building_Size=0): 
+    def __init__(self,SubmarketCode="",Inventory=0,Avg_Building_Size=0,x,y): 
         self.orig_Inventory=Inventory
         self.orig_Avg_Building_Size=Avg_Building_Size
         self.originalcode=SubmarketCode 
@@ -23,6 +23,8 @@ class Submarket(object):
         self.combine_with=set([SubmarketCode])
         self.combine=0
         self.new_Inv=Inventory
+        self.meanX=x
+        self.meanY=y 
         if Avg_Building_Size>0:
             self.orig_N=Inventory/Avg_Building_Size 
             self.curr_N=Inventory/Avg_Building_Size 
@@ -115,7 +117,8 @@ for index, row in neighbors_raw.iterrows():
     #I'm only trying to combine submarkets less than 10million SF in size; with other submarkets less than 15millionSF in size 
     if index!=previous_index: 
         subs_sortedbyN.append(index)
-        current_sub=Submarket(index,float(row['src_Inventory']), float(row['src_Avg_Building_Size']))
+        current_sub=Submarket(index,float(row['src_Inventory']), float(row['src_Avg_Building_Size']), float(row['src_Xcoord']), 
+            float(row['src_YCoord']))
     current_sub.AddNeighbor(row['nbr_LOGCode'])
     previous_index=index
     submarkets[index]=current_sub 
@@ -130,7 +133,7 @@ for s in subs_sortedbyN:
     submarket=submarkets[s]
     #print submarket.getcode()
     zero=0   
-    if i<0:
+    if i<10000:
         print "NEW SUBMARKET:In submarket", submarket.getcode(),"with inventory", submarket.getInventory()
         #n=raw_input("Press any key to continue:")
         combine_flag=0
