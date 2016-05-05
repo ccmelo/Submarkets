@@ -100,34 +100,37 @@ def combine(s1,s2):
 #submarkets_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/SubmarketList.csv"
 
 #WORK FILE PATHS
-neighbors_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\LOSA_Neighbors.csv"
+neighbors_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\LOSA_Neighbors_v2.csv"
 submarkets_file="P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets\SubmarketList.csv"
 
 #reads in csv neighbors data as a pandas dataframe 
 neighbors_raw=pandas.read_csv(neighbors_file, header=0, index_col=0)
 
-
 submarkets={}
+subs_sortedbyN=[]
 previous_index=0
 
 #convert raw data into submarkets  and store them in a DICTIONARY where key=submarketcode and value is submarket OBJECT
 for index, row in neighbors_raw.iterrows(): 
     #I'm only trying to combine submarkets less than 10million SF in size; with other submarkets less than 15millionSF in size 
     if index!=previous_index: 
-        current_sub=Submarket(index,float(row['src_Inventory']), float(row['src_Avg_Buiding_Size']))
+        subs_sortedbyN.append(index)
+        current_sub=Submarket(index,float(row['src_Inventory']), float(row['src_Avg_Building_Size']))
     current_sub.AddNeighbor(row['nbr_LOGCode'])
     previous_index=index
     submarkets[index]=current_sub 
 
-for k,v in submarkets.iteritems(): 
-    print k
-    print v.Neighbors()
+#for k,v in submarkets.iteritems(): 
+    #print k
+    #print v.Neighbors()
 
-    
+print subs_sortedbyN 
 i=0
-for submarket in submarkets.values():
+for s in subs_sortedbyN:
+    submarket=submarkets[s]
+    #print submarket.getcode()
     zero=0   
-    if i<500000:
+    if i<0:
         print "NEW SUBMARKET:In submarket", submarket.getcode(),"with inventory", submarket.getInventory()
         #n=raw_input("Press any key to continue:")
         combine_flag=0
