@@ -11,11 +11,12 @@ import numpy as np
 import json
 import os 
 import sys 
+import math as m 
 
 os.chdir('P:\Work in Progress\Carlota Melo\IND Submarkets\Submarkets') 
 
 class Submarket(object): 
-    def __init__(self,SubmarketCode="",Inventory=0,Avg_Building_Size=0,x,y): 
+    def __init__(self,SubmarketCode="",Inventory=0,Avg_Building_Size=0,x=0,y=0): 
         self.orig_Inventory=Inventory
         self.orig_Avg_Building_Size=Avg_Building_Size
         self.originalcode=SubmarketCode 
@@ -70,6 +71,9 @@ class Submarket(object):
     def printcombinelist(self):
         print self.combine_with
 
+
+def calc_distance(p1,p2):
+    return m.sqrt(m.pow(p2[0]-p1[0],2)+m.pow(p2[1]-p1[1],2))
     
     
 def combine(s1,s2): 
@@ -154,7 +158,7 @@ for s in subs_sortedbyN:
                 if submarket.getCurrentInventory()+neighbor.getCurrentInventory()<=11000000 and abs(s_avg-n_avg)<curr_diff:
                     print "combine flag set to 1"
                     comb_neighbor=neighbor
-                    curr_diff=abs(s_avg-n_avg)
+                    curr_diff=calc_distance(submarket.mean,neighbor.mean)
                     combine_flag=1
                     
         if combine_flag==1: 
