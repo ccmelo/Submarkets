@@ -195,7 +195,7 @@ for s in subs_sortedbyN:
             combine(comb_neighbor,submarket)
     i+=1
         
-#GET OUTPUT 
+#CREATE OUTPUT DF 
 output=pandas.DataFrame.from_dict(submarkets, orient='index') 
 output['orig_inventory']=0
 output['final_code']='Unchanged'
@@ -211,8 +211,9 @@ for k,v in submarkets.iteritems():
     output.loc[k,'final_X']=v.currmean[0]
     output.loc[k,'final_Y']=v.currmean[1]
     
-
-remain=output.loc[output['final_N']<10 , 'final_N']
+#get list of remainign submarkets with N<10 
+remain=output.loc[output['final_N']<10].index.values.tolist()
+print remain
 
 output.to_csv("output.csv") 
 """
