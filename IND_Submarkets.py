@@ -2,6 +2,10 @@
 """
 Created on Thu Apr 14 21:17:20 2016
 
+ideas for simplification: 
+    -create new submarket objects with each combine rather than track in existing submarket objects 
+    -add a "new_submarkets" dictionary for tracking above....starts with 
+
 @author: cmelo
 """
 
@@ -25,6 +29,7 @@ class Submarket(object):
         self.combine=0
         self.new_Inv=Inventory
         self.mean=(x,y)
+        self.currmean=(x,y)
         if Avg_Building_Size>0:
             self.orig_N=Inventory/Avg_Building_Size 
             self.curr_N=Inventory/Avg_Building_Size 
@@ -45,7 +50,7 @@ class Submarket(object):
         for s in sorted(self.combine_with):
             code=code+s
         return code 
-        return self.currentcode
+        #return self.currentcode
     def AddNeighbor(self,submarket): 
         self.neighbors.append(submarket) 
     def PrintNeighbors(self):
@@ -75,6 +80,17 @@ class Submarket(object):
 def calc_distance(p1,p2):
     return m.sqrt(m.pow(p2[0]-p1[0],2)+m.pow(p2[1]-p1[1],2))
     
+def calc_newmid(CodeList): 
+    points=[]
+    for Code in CodeList:
+        points.append(submarkets[Code].mean())
+    runx=0
+    runy=0
+    w=float(len(points))
+    for point in points:
+        runx=runx+point[0]
+        runy=runy+point[1]
+    return (float(runx/w),float(runy/w))
     
 def combine(s1,s2): 
     #combines two current submarkets into a new submarket 
