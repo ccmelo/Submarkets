@@ -194,6 +194,7 @@ for s in subs_sortedbyN:
         if combine_flag==1: 
             combine(comb_neighbor,submarket)
     i+=1
+    
         
 #CREATE OUTPUT DF 
 output=pandas.DataFrame.from_dict(submarkets, orient='index') 
@@ -215,7 +216,52 @@ for k,v in submarkets.iteritems():
 remain=output.loc[output['final_N']<10].index.values.tolist()
 print remain
 
-output.to_csv("output.csv") 
+
+
+
+#go through these submarkets again: 
+for s in remain: 
+    submarket=submarkets[s]
+    #print submarket.getcode()
+    zero=0   
+    print "ROUND 2 NEW SUBMARKET:In submarket", submarket.getcode(),"with inventory", submarket.getInventory()
+    #n=raw_input("Press any key to continue:")
+    combine_flag=0
+    curr_diff=10000000
+    s_Inventory=submarket.getInventory()
+    s_avg=submarket.getAvg_Building_Size() 
+    for n in submarket.Neighbors():
+        neighbor=submarkets[n]
+        print "examining neighbor",neighbor.getcode(),"with", neighbor.getInventory(),"inventory"
+        print "with combine code of",neighbor.combinestatus() 
+        n_avg=neighbor.getAvg_Building_Size()
+        #1. combine submarket with any neigbors that have no Inventory & that have not already been combined if submarket >10 props
+        if neighbor.getCurrentInventory()==0 and neighbor.combinestatus()==0 and zero<2 and submarket.curr_N>9:
+                print "calling combine from 0 if statement"
+                combine(neighbor,submarket)
+                zero+=1 
+        #2.Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest AVG BLDG SIZE
+        elif neighbor.curr_N!=0:
+            if submarket.curr_N<10 and calc_distance(submarket.currmean,neighbor.currmean)<curr_diff:
+                print "combine flag set to 1"
+                comb_neighbor=neighbor
+                curr_diff=calc_distance(submarket.mean,neighbor.mean)
+                combine_flag=1            
+        if combine_flag==1: 
+            combine(comb_neighbor,submarket)
+
+for k,v in submarkets.iteritems(): 
+    output.loc[k,'orig_inventory']=v.getInventory()
+    output.loc[k,'final_code']=v.getcurrentcode()
+    output.loc[k,'final_inventory']=v.getCurrentInventory()
+    output.loc[k,'final_N']=v.curr_N
+    output.loc[k,'final_X']=v.currmean[0]
+    output.loc[k,'final_Y']=v.currmean[1]
+    
+#get list of remainign submarkets with N<10 
+remain=output.loc[output['final_N']<10].index.values.tolist()
+print remain
+output.to_csv("output.csv")
 """
 codes=lambda x: x.getcode()     
 track_submarkets['new_codes']=track_submarkets['new_submarket'].map(codes)
