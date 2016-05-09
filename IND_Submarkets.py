@@ -178,7 +178,7 @@ for s in subs_sortedbyN:
                     zero+=1 
             #2.Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest AVG BLDG SIZE
             elif neighbor.curr_N!=0 and neighbor.combinestatus()==0:
-                if submarket.curr_N<10 and calc_distance(submarket.mean,neighbor.mean)<curr_diff:
+                if submarket.curr_N<10 and calc_distance(submarket.currmean,neighbor.currmean)<curr_diff:
                     print "combine flag set to 1"
                     comb_neighbor=neighbor
                     curr_diff=calc_distance(submarket.mean,neighbor.mean)
