@@ -194,11 +194,15 @@ output['orig_inventory']=0
 output['final_code']='Unchanged'
 output['final_inventory']=0 
 output['final_N']=0
+output['final_X']=0
+output['final_Y']=0
 for k,v in submarkets.iteritems(): 
     output.loc[k,'orig_inventory']=v.getInventory()
     output.loc[k,'final_code']=v.getcurrentcode()
     output.loc[k,'final_inventory']=v.getCurrentInventory()
     output.loc[k,'final_N']=v.curr_N
+    output.loc[k,'final_X']=v.currmean[0]
+    output.loc[k,'final_Y']=v.currmean[1]
 print zero
 output.to_csv("output.csv") 
 """
