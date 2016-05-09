@@ -178,8 +178,8 @@ for s in subs_sortedbyN:
             print "examining neighbor",neighbor.getcode(),"with", neighbor.getInventory(),"inventory"
             print "with combine code of",neighbor.combinestatus() 
             n_avg=neighbor.getAvg_Building_Size()
-            #1. always combine submarket with any neigbors that have no Inventory that have not already been combined 
-            if neighbor.getCurrentInventory()==0 and neighbor.combinestatus()==0 and zero<2:
+            #1. combine submarket with any neigbors that have no Inventory & that have not already been combined if submarket >10 props
+            if neighbor.getCurrentInventory()==0 and neighbor.combinestatus()==0 and zero<2 and submarket.curr_N>9:
                     print "calling combine from 0 if statement"
                     combine(neighbor,submarket)
                     zero+=1 
