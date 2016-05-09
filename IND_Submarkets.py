@@ -179,17 +179,19 @@ for s in subs_sortedbyN:
             print "with combine code of",neighbor.combinestatus() 
             n_avg=neighbor.getAvg_Building_Size()
             #1. combine submarket with any neigbors that have no Inventory & that have not already been combined if submarket >10 props
-            if neighbor.getCurrentInventory()==0 and neighbor.combinestatus()==0 and zero<2 and submarket.curr_N>9:
+            if neighbor.getCurrentInventory()==0 and neighbor.combinestatus()==0 and zero<2 and submarket.orig_N>9:
                     print "calling combine from 0 if statement"
                     combine(neighbor,submarket)
                     zero+=1 
-            #2.Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest AVG BLDG SIZE
+            #2.If submarket has inventory, Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest AVG BLDG SIZE
             elif neighbor.curr_N!=0 and neighbor.combinestatus()==0:
                 if submarket.curr_N<10 and calc_distance(submarket.currmean,neighbor.currmean)<curr_diff:
                     print "combine flag set to 1"
                     comb_neighbor=neighbor
                     curr_diff=calc_distance(submarket.mean,neighbor.mean)
                     combine_flag=1
+            #3 if submarket has 0 inventory, find largest border with >9 properties: 
+            #elif neighbor.curr_N>9 and 
                     
         if combine_flag==1: 
             combine(comb_neighbor,submarket)
@@ -236,7 +238,7 @@ for s in remain:
         print "with combine code of",neighbor.combinestatus() 
         n_avg=neighbor.getAvg_Building_Size()
         #1. combine submarket with any neigbors that have no Inventory & that have not already been combined if submarket >10 props
-        if neighbor.getCurrentInventory()==0 and neighbor.combinestatus()==0 and zero<2 and submarket.curr_N>9:
+        if neighbor.getCurrentInventory()==0 and neighbor.combinestatus()==0 and zero<2 and submarket.orig_N>9:
                 print "calling combine from 0 if statement"
                 combine(neighbor,submarket)
                 zero+=1 
