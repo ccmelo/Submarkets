@@ -80,18 +80,25 @@ class Submarket(object):
 def calc_distance(p1,p2):
     return m.sqrt(m.pow(p2[0]-p1[0],2)+m.pow(p2[1]-p1[1],2))
     
-def calc_newmid(CodeList): 
+def newmid(CodeList): 
+    print "called new mid"
+    w=0
     points=[]
     for Code in CodeList:
-        points.append(submarkets[Code].mean())
+        if submarkets[Code].mean!=(0,0):
+            points.append([submarkets[Code].mean,submarkets[Code].getInventory()])
     runx=0
     runy=0
-    w=float(len(points))
-    for point in points:
-        runx=runx+point[0]
-        runy=runy+point[1]
-    return (float(runx/w),float(runy/w))
-    
+    if len(points)>1:
+        for point in points:
+            print point
+            runx=runx+point[0][0]*point[1]
+            runy=runy+point[0][1]*point[1]
+            w=w+point[1]
+        new_mid=(float(runx/w),float(runy/w))
+        for Code in CodeList:
+            submarkets[Code].currmean=new_mid 
+        
 def combine(s1,s2): 
     #combines two current submarkets into a new submarket 
     
@@ -115,7 +122,7 @@ def combine(s1,s2):
             print "updating", sub
             submarkets[sub].update(s1.getComboList(),s1.getCurrentInventory(),s1.curr_N)
             print "now has combine list of" , submarkets[sub].printcombinelist(), "and new inventory of", submarkets[sub].getCurrentInventory()
-    
+    newmid(s1.getComboList())
 #HOME FILE PATHS 
 #neighbors_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSA_Neighbors.csv"
 #submarkets_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/SubmarketList.csv"
@@ -170,8 +177,8 @@ for s in subs_sortedbyN:
                     combine(neighbor,submarket)
                     zero+=1 
             #2.Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest AVG BLDG SIZE
-            elif neighbor.getCurrentInventory()!=0 and neighbor.combinestatus()==0:
-                if submarket.getCurrentInventory()+neighbor.getCurrentInventory()<=11000000 and abs(s_avg-n_avg)<curr_diff:
+            elif neighbor.curr_N!=0 and neighbor.combinestatus()==0:
+                if submarket.curr_N +neighbor.curr_N <=11 and calc_distance(submarket.mean,neighbor.mean)<curr_diff:
                     print "combine flag set to 1"
                     comb_neighbor=neighbor
                     curr_diff=calc_distance(submarket.mean,neighbor.mean)
