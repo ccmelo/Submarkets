@@ -78,6 +78,8 @@ class Submarket(object):
 
 
 def calc_distance(p1,p2):
+    print p1
+    print p2 
     return m.sqrt(m.pow(p2[0]-p1[0],2)+m.pow(p2[1]-p1[1],2))
     
 def newmid(CodeList): 
@@ -96,8 +98,12 @@ def newmid(CodeList):
             runy=runy+point[0][1]*point[1]
             w=w+point[1]
         new_mid=(float(runx/w),float(runy/w))
+    if len(points)>0: 
+        if len(points)==1:
+            new_mid=points[0][0]
         for Code in CodeList:
             submarkets[Code].currmean=new_mid 
+    
         
 def combine(s1,s2): 
     #combines two current submarkets into a new submarket 
