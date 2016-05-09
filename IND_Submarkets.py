@@ -116,8 +116,8 @@ def combine(s1,s2):
     #s1 gets combined with everyone s2 is connected with b/c a)we add all elements in s2's combo list to s1 and b) we add their codes together 
     s1.update(set([s2.getcode()]).union(s2.getComboList()),s1_start_inv+s2_start_inv,s1_N+s2_N)
     s2.update(set([s1.getcode()]).union(s1.getComboList()),s1_start_inv+s2_start_inv,s1_N+s2_N)
-    print s1.getcode(), "has the following in combine list", s1.printcombinelist(), "and new inventory of", s1.getCurrentInventory()
-    print s2.getcode(), "has the following in combine list", s2.printcombinelist(), "and new inventory of", s2.getCurrentInventory()
+    print s1.getcode(), "has the following in combine list", s1.printcombinelist(), "and new inventory of", s1.curr_N
+    print s2.getcode(), "has the following in combine list", s2.printcombinelist(), "and new inventory of", s2.curr_N
     print s1.getcode(), ", combine set to 1"
     print s2.getcode(), ", combine set to 1"
    # print s1.getcode(), "NOW has the following in combine list", s1.printcombinelist(), "AND code of" s1.getcurrentcode()
@@ -127,8 +127,10 @@ def combine(s1,s2):
         for sub in s1.getComboList():
             print "updating", sub
             submarkets[sub].update(s1.getComboList(),s1.getCurrentInventory(),s1.curr_N)
-            print "now has combine list of" , submarkets[sub].printcombinelist(), "and new inventory of", submarkets[sub].getCurrentInventory()
+            print "now has combine list of" , submarkets[sub].printcombinelist(), "and new inventory of", submarkets[sub].curr_N
     newmid(s1.getComboList())
+    if s1.getcode()=='LOG-LOSA-65' or s2.getcode()=='LOG-LOSA-65':
+                a=raw_input("Where is your csv file located? (I need the full file path please!)  ")
 #HOME FILE PATHS 
 #neighbors_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/LOSA_Neighbors.csv"
 #submarkets_file="/Users/cmelo/Google Drive/Costar work/IND Submarkets/SubmarketList.csv"
@@ -166,8 +168,9 @@ for s in subs_sortedbyN:
     submarket=submarkets[s]
     #print submarket.getcode()
     zero=0   
-    if i<10000:
-        print "NEW SUBMARKET:In submarket", submarket.getcode(),"with inventory", submarket.getInventory()
+    largest_N=0
+    if 1==1:
+        print "NEW SUBMARKET:In submarket", submarket.getcode(),"with inventory", submarket.curr_N
         #n=raw_input("Press any key to continue:")
         combine_flag=0
         curr_diff=10000000
@@ -175,7 +178,7 @@ for s in subs_sortedbyN:
         s_avg=submarket.getAvg_Building_Size() 
         for n in submarket.Neighbors():
             neighbor=submarkets[n]
-            print "examining neighbor",neighbor.getcode(),"with", neighbor.getInventory(),"inventory"
+            print "examining neighbor",neighbor.getcode(),"with", neighbor.curr_N,"inventory"
             print "with combine code of",neighbor.combinestatus() 
             n_avg=neighbor.getAvg_Building_Size()
             #1. combine submarket with any neigbors that have no Inventory & that have not already been combined if submarket >10 props
@@ -184,22 +187,30 @@ for s in subs_sortedbyN:
                     combine(neighbor,submarket)
                     zero+=1 
             #2.If submarket has inventory, Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest AVG BLDG SIZE
-            elif neighbor.curr_N!=0 and neighbor.combinestatus()==0:
+            elif submarket.curr_N!=0 and neighbor.curr_N!=0 and neighbor.combinestatus()==0:
                 if submarket.curr_N<10 and calc_distance(submarket.currmean,neighbor.currmean)<curr_diff:
-                    print "combine flag set to 1"
+                    print "combine flag set to 1-closer distance"
                     comb_neighbor=neighbor
                     curr_diff=calc_distance(submarket.mean,neighbor.mean)
                     combine_flag=1
-            #3 if submarket has 0 inventory, find largest border with >9 properties: 
-            #elif neighbor.curr_N>9 and 
-                    
+            #3 if submarket has 0 inventory, find largest neighbor 
+            elif submarket.curr_N==0 and neighbor.orig_N>largest_N:
+                print "combine flag set to 1-largest neighbors"
+                largest_N=neighbor.orig_N
+                comb_neighbor=neighbor
+                combine_flag=1
+            if submarket.getcode()=='LOG-LOSA-0B' or neighbor.getcode()=='LOG-LOSA-65':
+                a=raw_input("Where is your csv file located? (I need the full file path please!)  ")
         if combine_flag==1: 
             combine(comb_neighbor,submarket)
+        
+            
     i+=1
     
         
 #CREATE OUTPUT DF 
 output=pandas.DataFrame.from_dict(submarkets, orient='index') 
+output['orig_N']=0
 output['orig_inventory']=0
 output['final_code']='Unchanged'
 output['final_inventory']=0 
@@ -207,6 +218,7 @@ output['final_N']=0
 output['final_X']=0
 output['final_Y']=0
 for k,v in submarkets.iteritems(): 
+    output.loc[k,'orig_N']=v.orig_N
     output.loc[k,'orig_inventory']=v.getInventory()
     output.loc[k,'final_code']=v.getcurrentcode()
     output.loc[k,'final_inventory']=v.getCurrentInventory()
@@ -217,7 +229,7 @@ for k,v in submarkets.iteritems():
 #get list of remainign submarkets with N<10 
 remain=output.loc[output['final_N']<10].index.values.tolist()
 print remain
-
+output.to_csv("output.csv")
 
 
 
@@ -226,31 +238,22 @@ for s in remain:
     submarket=submarkets[s]
     #print submarket.getcode()
     zero=0   
-    print "ROUND 2 NEW SUBMARKET:In submarket", submarket.getcode(),"with inventory", submarket.getInventory()
+    print "ROUND 2 NEW SUBMARKET:In submarket", submarket.getcode(),"with inventory", submarket.curr_N
     #n=raw_input("Press any key to continue:")
     combine_flag=0
     curr_diff=10000000
-    s_Inventory=submarket.getInventory()
-    s_avg=submarket.getAvg_Building_Size() 
     for n in submarket.Neighbors():
         neighbor=submarkets[n]
-        print "examining neighbor",neighbor.getcode(),"with", neighbor.getInventory(),"inventory"
+        print "examining neighbor",neighbor.getcode(),"with", neighbor.curr_N,"inventory"
         print "with combine code of",neighbor.combinestatus() 
-        n_avg=neighbor.getAvg_Building_Size()
-        #1. combine submarket with any neigbors that have no Inventory & that have not already been combined if submarket >10 props
-        if neighbor.getCurrentInventory()==0 and neighbor.combinestatus()==0 and zero<2 and submarket.orig_N>9:
-                print "calling combine from 0 if statement"
-                combine(neighbor,submarket)
-                zero+=1 
-        #2.Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest AVG BLDG SIZE
-        elif neighbor.curr_N!=0:
-            if submarket.curr_N<10 and calc_distance(submarket.currmean,neighbor.currmean)<curr_diff:
-                print "combine flag set to 1"
-                comb_neighbor=neighbor
-                curr_diff=calc_distance(submarket.mean,neighbor.mean)
-                combine_flag=1            
-        if combine_flag==1: 
-            combine(comb_neighbor,submarket)
+        #2.Of all the neighbors, track all those combinations which lead to ~10M SF and combine with submarket that has closest midpoint
+        if submarket.curr_N<10 and calc_distance(submarket.currmean,neighbor.currmean)<curr_diff and neighbor.getcurrentcode()!=submarket.getcurrentcode() :
+            print "combine flag set to 1"
+            comb_neighbor=neighbor
+            curr_diff=calc_distance(submarket.mean,neighbor.mean)
+            combine_flag=1            
+    if combine_flag==1: 
+        combine(comb_neighbor,submarket)
 
 for k,v in submarkets.iteritems(): 
     output.loc[k,'orig_inventory']=v.getInventory()
@@ -261,6 +264,7 @@ for k,v in submarkets.iteritems():
     output.loc[k,'final_Y']=v.currmean[1]
     
 #get list of remainign submarkets with N<10 
+print output.loc[output['final_N']<10]
 remain=output.loc[output['final_N']<10].index.values.tolist()
 print remain
 output.to_csv("output.csv")
