@@ -161,6 +161,7 @@ for index, row in neighbors_raw.iterrows():
 
 print subs_sortedbyN 
 i=0
+# INITIALLY, GO THROUGH LIST OF ALL SUBMARKETS, STARTING AT SMALLEST ONES, AND LOOK TO COMBINE 
 for s in subs_sortedbyN:
     submarket=submarkets[s]
     #print submarket.getcode()
@@ -209,7 +210,10 @@ for k,v in submarkets.iteritems():
     output.loc[k,'final_N']=v.curr_N
     output.loc[k,'final_X']=v.currmean[0]
     output.loc[k,'final_Y']=v.currmean[1]
-print zero
+    
+
+remain=output.loc[output['final_N']<10 , 'final_N']
+
 output.to_csv("output.csv") 
 """
 codes=lambda x: x.getcode()     
